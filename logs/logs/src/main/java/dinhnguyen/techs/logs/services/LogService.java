@@ -13,4 +13,6 @@ public interface LogService {
 
 	public Logs save(LogErrors logs);
 
+	public Logs listErrorOfSV(String serviceName);
+
 }

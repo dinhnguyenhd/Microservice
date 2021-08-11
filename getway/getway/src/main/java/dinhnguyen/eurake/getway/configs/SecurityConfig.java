@@ -76,7 +76,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers(AUTH_WHITELIST).permitAll()
 				.antMatchers("/product-service/**").hasAuthority("product-service")
 				.antMatchers("/order-service/**").hasAuthority("order-service")
-				.antMatchers("/log-analys-service/**").hasAuthority("log-analys-service")
+				.antMatchers("/logs-service/**").hasAuthority("logs-service")
 				.anyRequest().authenticated();
 
 		http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

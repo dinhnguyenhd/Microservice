@@ -53,4 +53,12 @@ public class LogServiceImp implements LogService {
 		return logs;
 	}
 
+	@Override
+	public Logs listErrorOfSV(String serviceName) {
+		Logs logs = this.getServiceByName(serviceName);
+		List<LogError> list = logs.getErrors();
+		logs.setErrors(list);
+		return logs;
+	}
+
 }

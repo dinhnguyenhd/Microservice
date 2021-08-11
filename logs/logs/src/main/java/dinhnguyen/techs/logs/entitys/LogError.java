@@ -10,8 +10,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
-@Table(name = "logs_errors")
+@Table(name = "logs_error")
 public class LogError {
 
 	@Id
@@ -30,6 +32,7 @@ public class LogError {
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "id_service", nullable = false)
+	@JsonBackReference
 	private Logs logService;
 
 	public Long getId() {
