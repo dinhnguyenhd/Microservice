@@ -1,12 +1,17 @@
 package dinhnguyen.eurake.getway.securitys;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import dinhnguyen.eurake.getway.forms.JwtTokenResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -14,35 +19,42 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.UnsupportedJwtException;
-import lombok.extern.log4j.Log4j;
 
 @Component
-@Log4j
 public class JwtTokenProvider {
 
 	Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
 	// @Value("${app.jwtSecret}")
-	private String jwtSecret = "cdfjdjjjfkjvfdksdasdfvregmkxc";
+	private String jwtSecret = "Y29uZHVvbmd4dWFlbWRp";
 
 	// @Value("${app.jwtExpirationInMs}")
-	private int jwtExpirationInMs = 36000000;
+	private int accessToken = 36000000;
 
-	public String generateToken(Authentication authentication) {
+	private int refreshToken = 36000000;
 
-		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+	public String accessToken(Authentication authentication) {
 
+		UsernamePasswordAuthenticationToken userInfo = (UsernamePasswordAuthenticationToken) authentication;
 		Date now = new Date();
-		Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
+		Date expiryDate = new Date(now.getTime() + accessToken);
 
-		return Jwts.builder().setSubject(Long.toString(userPrincipal.getId())).setIssuedAt(new Date())
-				.setExpiration(expiryDate).signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
+		return Jwts.builder().setSubject(userInfo.getName()).setIssuedAt(new Date()).setExpiration(expiryDate)
+				.signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
 	}
 
-	public Long getUserIdFromJWT(String token) {
-		Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
+	public String refreshToken(Authentication authentication) {
 
-		return Long.parseLong(claims.getSubject());
+		UsernamePasswordAuthenticationToken userInfo = (UsernamePasswordAuthenticationToken) authentication;
+		Date now = new Date();
+		Date expiryDate = new Date(now.getTime() + refreshToken);
+		return Jwts.builder().setSubject(userInfo.getName()).setIssuedAt(new Date()).setExpiration(expiryDate)
+				.signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
+	}
+
+	public String getEmailFromJWT(String token) {
+		Claims claims = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
+		return (String) claims.get("sub");
 	}
 
 	public boolean validateToken(String authToken) {
@@ -62,4 +74,18 @@ public class JwtTokenProvider {
 		}
 		return false;
 	}
+
+	public JwtTokenResponse generateToken(Authentication authentication) {
+		String accessTk = accessToken(authentication);
+		String refreshTk = refreshToken(authentication);
+		UsernamePasswordAuthenticationToken userInfo = (UsernamePasswordAuthenticationToken) authentication;
+		String username = userInfo.getName();
+		Set<String> roles = new HashSet<>();
+		for (GrantedAuthority at : userInfo.getAuthorities()) {
+			roles.add(at.getAuthority());
+		}
+		return new JwtTokenResponse(username, accessTk, refreshTk, roles);
+
+	}
+
 }

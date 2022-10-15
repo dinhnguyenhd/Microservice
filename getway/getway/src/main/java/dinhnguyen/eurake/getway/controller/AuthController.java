@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import dinhnguyen.eurake.getway.forms.JwtAuthenticationResponse;
+import dinhnguyen.eurake.getway.forms.JwtTokenResponse;
 import dinhnguyen.eurake.getway.forms.LoginRequest;
 import dinhnguyen.eurake.getway.forms.SignUpRequest;
 import dinhnguyen.eurake.getway.services.AuthService;
@@ -27,13 +27,13 @@ public class AuthController {
 		this.authService = authService;
 	}
 
-	@PostMapping("/signin")
+	@PostMapping("/login")
 	@ResponseStatus(OK)
-	public JwtAuthenticationResponse login(@Valid @RequestBody LoginRequest loginRequest) {
+	public JwtTokenResponse login(@Valid @RequestBody LoginRequest loginRequest) {
 		return authService.authenticateUser(loginRequest);
 	}
 
-	@PostMapping("/signup")
+	@PostMapping("/register")
 	@ResponseStatus(OK)
 	public Long register(@Valid @RequestBody SignUpRequest signUpRequest) {
 		return authService.registerUser(signUpRequest);

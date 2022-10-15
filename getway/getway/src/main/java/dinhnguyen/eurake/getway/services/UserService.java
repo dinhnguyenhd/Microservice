@@ -17,11 +17,12 @@ public class UserService {
 	private UserRepository userRepository;
 
 	public UserSummary getCurrentUser(UserPrincipal userPrincipal) {
-		return UserSummary.builder().id(userPrincipal.getId()).email(userPrincipal.getEmail())
-				.name(userPrincipal.getName()).build();
+		UserSummary use = new UserSummary(userPrincipal.getId(), userPrincipal.getEmail(), userPrincipal.getName());
+		return use;
 	}
 
 	public List<User> list() {
 		return this.userRepository.findAll();
 	}
+
 }

@@ -8,63 +8,51 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import dinhnguyen.eurake.getway.configs.CustomAuthenticationProvider;
 import dinhnguyen.eurake.getway.entitys.Role;
 import dinhnguyen.eurake.getway.entitys.User;
 import dinhnguyen.eurake.getway.exceptions.ConflictException;
-import dinhnguyen.eurake.getway.forms.JwtAuthenticationResponse;
+import dinhnguyen.eurake.getway.forms.JwtTokenResponse;
 import dinhnguyen.eurake.getway.forms.LoginRequest;
 import dinhnguyen.eurake.getway.forms.SignUpRequest;
 import dinhnguyen.eurake.getway.repository.RoleRepository;
 import dinhnguyen.eurake.getway.repository.UserRepository;
 import dinhnguyen.eurake.getway.securitys.JwtAuthenticationFilter;
 import dinhnguyen.eurake.getway.securitys.JwtTokenProvider;
-import dinhnguyen.eurake.getway.securitys.UserPrincipal;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
 public class AuthService {
 
 	Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
-
-	private AuthenticationManager authenticationManager;
+	@Autowired
+	CustomAuthenticationProvider customAuthenticationProvider;
+	@Autowired
 	private UserRepository userRepository;
+	@Autowired
 	private RoleRepository roleRepository;
+	@Autowired
 	private PasswordEncoder passwordEncoder;
+	@Autowired
 	private JwtTokenProvider tokenProvider;
 
-	@Autowired
-	public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository,
-			RoleRepository roleRepository, PasswordEncoder passwordEncoder, JwtTokenProvider tokenProvider) {
-		this.authenticationManager = authenticationManager;
-		this.userRepository = userRepository;
-		this.roleRepository = roleRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.tokenProvider = tokenProvider;
-	}
+	public JwtTokenResponse authenticateUser(LoginRequest loginRequest) {
 
-	public JwtAuthenticationResponse authenticateUser(LoginRequest loginRequest) {
-		Authentication authentication = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+		UsernamePasswordAuthenticationToken user = (new UsernamePasswordAuthenticationToken(loginRequest,
+				loginRequest.getPassword()));
 
+		Authentication authentication = customAuthenticationProvider.authenticate(user);
 		SecurityContextHolder.getContext().setAuthentication(authentication);
-
-		String jwt = tokenProvider.generateToken(authentication);
-
-		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-
-		logger.info("User with [email: {}] has logged in", userPrincipal.getEmail());
-
-		return new JwtAuthenticationResponse(jwt);
+		JwtTokenResponse jwt = tokenProvider.generateToken(authentication);
+		return jwt;
 	}
 
+	// Xứ lí lại cái add role - Add multiple role
 	public Long registerUser(SignUpRequest signUpRequest) {
 		Long id;
 		User user = new User(signUpRequest.getName(), signUpRequest.getEmail(), signUpRequest.getPassword());
