@@ -33,9 +33,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().and().csrf().disable();
 		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-		http.logout(logout -> logout.logoutUrl("/api/auth/logout")
-				.addLogoutHandler(new SecurityContextLogoutHandler())
-				.addLogoutHandler(new HeaderWriterLogoutHandler(new ClearSiteDataHeaderWriter(SOURCE))));
+		
 		// Entry points
 		http.authorizeRequests().antMatchers("/api/auth/login").permitAll()
 								.antMatchers("/api/auth/register").permitAll()
@@ -43,6 +41,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 								.antMatchers("/order-service/**").hasAuthority("order-service")
 								.antMatchers("/logs-service/**").hasAuthority("logs-service")
 								.anyRequest().authenticated();
+		
+		http.logout(logout -> logout.logoutUrl("/api/auth/logout")
+				.addLogoutHandler(new SecurityContextLogoutHandler())
+				.addLogoutHandler(new HeaderWriterLogoutHandler(new ClearSiteDataHeaderWriter(SOURCE))));
+	
 				
 		http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
